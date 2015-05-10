@@ -1,5 +1,12 @@
 package BankReader.file;
 
+import BankReader.category.FinancialCategory;
+import BankReader.file.ABN.ABNBankLine;
+import BankReader.util.Amount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemProcessor;
+
 /**
  * Created by jan on 2-5-15.
  */
@@ -50,4 +57,5 @@ public class GenericBankLine {
     public void setSubCategory(String subCategory) {
         this.subCategory = subCategory;
     }
+
 }

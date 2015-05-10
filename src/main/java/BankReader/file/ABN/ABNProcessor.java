@@ -31,6 +31,7 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
 
         genericBankLine.setAmount(abnBankLine.getTransactiebedrag());
         genericBankLine.setDescription(abnBankLine.getOmschrijving());
+        genericBankLine.setDate(abnBankLine.getTransactiedatum());
 
         FinancialCategory financialCategory = financialCategories.getFinancialCategory(genericBankLine.getDescription());
 
