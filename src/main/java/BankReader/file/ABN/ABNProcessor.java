@@ -2,6 +2,8 @@ package BankReader.file.ABN;
 
 import BankReader.category.FinancialCategories;
 import BankReader.category.FinancialCategory;
+import BankReader.file.BankProcessor;
+import BankReader.file.GenericBankLine;
 import BankReader.util.Amount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +15,15 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by jan on 3-5-15.
  */
-public class ABNProcessor implements ItemProcessor<ABNBankLine, GenericBankLine> {
+public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBankLine, GenericBankLine> {
 
     public static final Logger LOG = LoggerFactory.getLogger(ABNProcessor.class);
+    public static final String CATEGORIES_FILE_NAME = "categories.txt";
 
     private FinancialCategories financialCategories = new FinancialCategories();
 
@@ -52,7 +54,7 @@ public class ABNProcessor implements ItemProcessor<ABNBankLine, GenericBankLine>
     @PostConstruct
     public void init() throws IOException {
         //TODO fix path
-        Path path = FileSystems.getDefault().getPath("/home/jan/Documenten/projecten/BankReader/src/test/resources", "categories.txt");
+        Path path = FileSystems.getDefault().getPath(inputDirectory, CATEGORIES_FILE_NAME);
         List<String> categoryLines = Files.readAllLines(path, Charset.defaultCharset());
         for (String line : categoryLines){
             LOG.info("reading category {}", line);

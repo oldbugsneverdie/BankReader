@@ -2,8 +2,8 @@ package BankReader.file.ING;
 
 import BankReader.category.FinancialCategories;
 import BankReader.category.FinancialCategory;
-import BankReader.file.ABN.ABNBankLine;
-import BankReader.file.ABN.GenericBankLine;
+import BankReader.file.GenericBankLine;
+import BankReader.file.BankProcessor;
 import BankReader.util.Amount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by jan on 3-5-15.
  */
-public class INGProcessor implements ItemProcessor<INGBankLine, GenericBankLine> {
+public class INGProcessor extends BankProcessor implements ItemProcessor<INGBankLine, GenericBankLine> {
 
     public static final Logger LOG = LoggerFactory.getLogger(INGProcessor.class);
 
@@ -57,7 +57,7 @@ public class INGProcessor implements ItemProcessor<INGBankLine, GenericBankLine>
     @PostConstruct
     public void init() throws IOException {
         //TODO fix path
-        Path path = FileSystems.getDefault().getPath("/home/jan/Documenten/projecten/BankReader/src/test/resources", "categories.txt");
+        Path path = FileSystems.getDefault().getPath(inputDirectory, "categories.txt");
         List<String> categoryLines = Files.readAllLines(path, Charset.defaultCharset());
         for (String line : categoryLines){
             LOG.info("reading category {}", line);

@@ -1,4 +1,4 @@
-package BankReader.file.ABN;
+package BankReader.file;
 
 /**
  * Created by jan on 2-5-15.
