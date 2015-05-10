@@ -45,7 +45,6 @@ public class BatchConfiguration {
     public ItemReader<ABNBankLine> abnReader() {
 
         FlatFileItemReader<ABNBankLine> reader = new FlatFileItemReader<ABNBankLine>();
-        //reader.setResource(new ClassPathResource("uitgaven-ing-abn-2015.csv"));
         reader.setResource(new FileSystemResource(inputDirectory + "/abn.csv"));
         reader.setLineMapper(new DefaultLineMapper<ABNBankLine>() {{
             setLineTokenizer(new DelimitedLineTokenizer() {{
@@ -62,7 +61,6 @@ public class BatchConfiguration {
     @Bean
     public ItemWriter<GenericBankLine> abnWriter() {
     	FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-    	//writer.setResource(new ClassPathResource("student-marksheet.csv"));
         writer.setResource(new FileSystemResource(inputDirectory + "/abn-output.csv"));
     	DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
     	delLineAgg.setDelimiter(",");
@@ -102,7 +100,6 @@ public class BatchConfiguration {
     public ItemReader<INGBankLine> ingReader() {
 
         FlatFileItemReader<INGBankLine> reader = new FlatFileItemReader<INGBankLine>();
-        //reader.setResource(new ClassPathResource("uitgaven-ing-abn-2015.csv"));
         reader.setResource(new FileSystemResource(inputDirectory + "/ing.csv"));
         reader.setLineMapper(new DefaultLineMapper<INGBankLine>() {{
             setLineTokenizer(new DelimitedLineTokenizer() {{
@@ -119,7 +116,6 @@ public class BatchConfiguration {
     @Bean
     public ItemWriter<GenericBankLine> ingWriter() {
         FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-        //writer.setResource(new ClassPathResource("student-marksheet.csv"));
         writer.setResource(new FileSystemResource(inputDirectory + "/ing-output.csv"));
         DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
         delLineAgg.setDelimiter(",");
