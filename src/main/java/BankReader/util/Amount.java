@@ -26,4 +26,9 @@ public class Amount {
     public void addAmount(Amount amount) {
         this.amountInCents += amount.getAmountInCents();
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(amountInCents);
+    }
 }

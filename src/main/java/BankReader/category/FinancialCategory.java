@@ -16,15 +16,34 @@ public class FinancialCategory {
 
     private Amount amount = new Amount(null);
 
-    public FinancialCategory(String key, String categoryName) {
+    public FinancialCategory(String key, String categoryName, String subCategoryName) {
         this.key = key;
         this.categoryName = categoryName;
+        this.subCategoryName = subCategoryName;
     }
 
     public void addAmount(Amount amount) {
         this.amount.addAmount(amount);
     }
 
+    public boolean categoriesMatch(String categoryName, String subCategoryName){
+        return  nameMatches(this.categoryName, categoryName) && nameMatches(this.subCategoryName, subCategoryName);
+    }
+
+    private boolean nameMatches(String name1, String name2) {
+        if (name1 == null && name2 == null){
+            return true;
+        }
+        if (name1 != null && name1.equals(name2)){
+            return true;
+        }
+        return false;
+    }
+
+
+    public Amount getAmount() {
+        return amount;
+    }
 
     public String getCategoryName() {
         return categoryName;
@@ -50,4 +69,8 @@ public class FinancialCategory {
         this.key = key;
     }
 
+    @Override
+    public String toString() {
+        return "Financial category: " + categoryName + " / " + subCategoryName + ": " + amount;
+    }
 }

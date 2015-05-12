@@ -15,7 +15,7 @@ public class GenericBankLine {
     private String category;
     private String subCategory;
     private String date;
-    private String amount;
+    private Amount amount;
     private String description;
 
     public String getDate() {
@@ -26,11 +26,11 @@ public class GenericBankLine {
         this.date = date;
     }
 
-    public String getAmount() {
+    public Amount getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(Amount amount) {
         this.amount = amount;
     }
 

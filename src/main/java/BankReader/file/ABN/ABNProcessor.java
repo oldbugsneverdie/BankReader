@@ -29,7 +29,7 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
         //        return marksheet;
         GenericBankLine genericBankLine =  new GenericBankLine();
 
-        genericBankLine.setAmount(abnBankLine.getTransactiebedrag());
+        genericBankLine.setAmount(new Amount(abnBankLine.getTransactiebedrag()));
         genericBankLine.setDescription(abnBankLine.getOmschrijving());
         genericBankLine.setDate(abnBankLine.getTransactiedatum());
 
@@ -42,8 +42,6 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
         } else {
             genericBankLine.setCategory(financialCategory.getCategoryName());
             genericBankLine.setSubCategory(financialCategory.getSubCategoryName());
-            Amount amount = new Amount(genericBankLine.getAmount());
-            financialCategory.addAmount(amount);
         }
 
         return genericBankLine;

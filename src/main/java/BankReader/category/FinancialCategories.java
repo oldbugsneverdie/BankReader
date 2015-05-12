@@ -37,10 +37,7 @@ public class FinancialCategories {
     }
 
     private void addNewFinancialCategory(String key, String categoryName, String subCategoryName) {
-        FinancialCategory financialCategory = new FinancialCategory(key, categoryName);
-        if (subCategoryName!=null){
-            financialCategory.setSubCategoryName(subCategoryName);
-        }
+        FinancialCategory financialCategory = new FinancialCategory(key, categoryName, subCategoryName);
         financialCategories.add(financialCategory);
     }
 

@@ -33,7 +33,7 @@ public class INGProcessor extends BankProcessor implements ItemProcessor<INGBank
         if (amountAsString!=null && !amountAsString.isEmpty() && ingBankLine.getAfBij().toLowerCase().equals("af")){
             amountAsString = "-" + ingBankLine.getBedrag();
         }
-        genericBankLine.setAmount(amountAsString);
+        genericBankLine.setAmount(new Amount(amountAsString));
         genericBankLine.setDescription(ingBankLine.getOmschrijving() + " - " + ingBankLine.getMededelingen() );
 
         FinancialCategory financialCategory = financialCategories.getFinancialCategory(genericBankLine.getDescription());
@@ -45,8 +45,6 @@ public class INGProcessor extends BankProcessor implements ItemProcessor<INGBank
         } else {
             genericBankLine.setCategory(financialCategory.getCategoryName());
             genericBankLine.setSubCategory(financialCategory.getSubCategoryName());
-            Amount amount = new Amount(genericBankLine.getAmount());
-            financialCategory.addAmount(amount);
         }
 
         return genericBankLine;

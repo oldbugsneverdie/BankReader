@@ -1,5 +1,4 @@
-package BankReader
-        ;
+package BankReader;
 
 import BankReader.file.ABN.ABNBankLine;
 import BankReader.file.ABN.ABNProcessor;
@@ -7,6 +6,8 @@ import BankReader.file.GenericBankLine;
 import BankReader.file.GenericProcessor;
 import BankReader.file.ING.INGBankLine;
 import BankReader.file.ING.INGProcessor;
+import BankReader.report.category.ExpensesPerCategoryReport;
+import BankReader.report.category.TotalProcessor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -20,8 +21,6 @@ import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.mapping.FieldSetMapper;
-import org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
@@ -32,9 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import sun.net.www.content.text.Generic;
 
-import java.io.File;
 import java.io.IOException;
 
 @Configuration
@@ -61,6 +58,7 @@ public class BatchConfiguration {
                 .start(abnStep())
                 .next(ingStep())
                 .next(resultFilesStep())
+                .next(expensesPerCategoryStep())
                 .build();
     }
 
@@ -71,6 +69,7 @@ public class BatchConfiguration {
 
         FlatFileItemReader<ABNBankLine> reader = new FlatFileItemReader<ABNBankLine>();
         reader.setResource(new FileSystemResource(inputDirectory + "/abn.csv"));
+        reader.setLinesToSkip(1);
         reader.setLineMapper(new DefaultLineMapper<ABNBankLine>() {{
             setLineTokenizer(new DelimitedLineTokenizer() {{
                 setNames(new String[]{"Rekeningnummer", "Muntsoort", "Transactiedatum", "Rentedatum", "Beginsaldo", "Eindsaldo", "Transactiebedrag", "Omschrijving"});
@@ -118,6 +117,7 @@ public class BatchConfiguration {
     public ItemReader<INGBankLine> ingReader() {
 
         FlatFileItemReader<INGBankLine> reader = new FlatFileItemReader<INGBankLine>();
+        reader.setLinesToSkip(1);
         reader.setResource(new FileSystemResource(inputDirectory + "/ing.csv"));
         reader.setLineMapper(new DefaultLineMapper<INGBankLine>() {{
             setLineTokenizer(new DelimitedLineTokenizer() {{
@@ -217,6 +217,55 @@ public class BatchConfiguration {
     }
 
     // Process total.csv to get useful reports
+
+    @Bean
+    public ItemReader<GenericBankLine> totalReader() {
+
+        FlatFileItemReader<GenericBankLine> reader = new FlatFileItemReader<GenericBankLine>();
+        reader.setResource(new FileSystemResource(inputDirectory + "/total.csv"));
+        reader.setLineMapper(new DefaultLineMapper<GenericBankLine>() {{
+            setLineTokenizer(new DelimitedLineTokenizer("###") {{
+                setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
+            }});
+            setFieldSetMapper(new BeanWrapperFieldSetMapper<GenericBankLine>() {{
+                setTargetType(GenericBankLine.class);
+            }});
+        }});
+        return reader;
+    }
+
+    @Bean
+    public ItemProcessor<GenericBankLine, GenericBankLine> totalProcessor() {
+        return new TotalProcessor();
+    }
+
+    @Bean
+    public ExpensesPerCategoryReport expensesPerCategoryWriter() {
+//        FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
+//        writer.setResource(new FileSystemResource(inputDirectory + "/expenses-per-category.csv"));
+//        DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
+//        delLineAgg.setDelimiter("###");
+//        BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
+//        fieldExtractor.setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
+//        delLineAgg.setFieldExtractor(fieldExtractor);
+//        writer.setLineAggregator(delLineAgg);
+
+        ExpensesPerCategoryReport expensesPerCategoryReport = new ExpensesPerCategoryReport();
+        expensesPerCategoryReport.setFooterCallback(expensesPerCategoryReport);
+
+        return expensesPerCategoryReport;
+
+    }
+
+    @Bean
+    public Step expensesPerCategoryStep() {
+        return steps.get("expensesPerCategory")
+                .<GenericBankLine, GenericBankLine> chunk(5)
+                .reader(totalReader())
+                .processor(totalProcessor())
+                .writer(expensesPerCategoryWriter())
+                .build();
+    }
 
 
 }
