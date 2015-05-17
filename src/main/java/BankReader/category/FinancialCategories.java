@@ -1,10 +1,11 @@
 package BankReader.category;
 
+import BankReader.file.GenericBankLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -27,7 +30,9 @@ public class FinancialCategories {
     @Value("${settings.directory}")
     protected String settingsDirectory;
 
-    private List<FinancialCategory> financialCategories = new ArrayList<FinancialCategory>();
+    private List<Category> categories = new ArrayList<Category>();
+    private List<SubCategory> subCategories = new ArrayList<SubCategory>();
+    private List<GenericBankLine> unMatchedGenericBankLines = new ArrayList<GenericBankLine>();
 
     public FinancialCategories() {
     }
@@ -72,38 +77,95 @@ public class FinancialCategories {
     private void addFinancialCategory(String key, String categoryName, String subCategoryName){
 
         if (keyIsUnique(key)){
-            addNewFinancialCategory(key, categoryName, subCategoryName);
+            addNewSubCategory(key, categoryName, subCategoryName);
         } else {
-            LOG.error("Will ignore category with key '{}', as it already exists", key);
+            LOG.error("Will ignore category {} / {} with key '{}', as the key already exists", categoryName, subCategoryName, key);
         }
     }
 
     private boolean keyIsUnique(String key) {
-        for(FinancialCategory financialCategory: financialCategories){
-            if (financialCategory.getKey().equals(key)){
+        for(SubCategory subCategory: subCategories){
+            if (subCategory.getKey().equals(key)){
                 return false;
             }
         }
         return true;
     }
 
-    private void addNewFinancialCategory(String key, String categoryName, String subCategoryName) {
-        FinancialCategory financialCategory = new FinancialCategory(key, categoryName, subCategoryName);
-        financialCategories.add(financialCategory);
+    private void addNewSubCategory(String key, String categoryName, String subCategoryName) {
+
+        Category category = getOrCreateCategory(categoryName);
+
+        SubCategory subCategory = getOrCreateSubCategory(category, subCategoryName, key);
+
     }
 
-    public List<FinancialCategory> getAll() {
-        return financialCategories;
+    private Category getOrCreateCategory(String categoryName) {
+        Assert.notNull(categoryName);
+        for(Category category: categories){
+            if (category.getName().toLowerCase().equals(categoryName.toLowerCase())){
+                return category;
+            }
+        }
+        Category category = new Category(categoryName.toLowerCase());
+        categories.add(category);
+        return category;
     }
 
-    public FinancialCategory getFinancialCategory(String banklineDescription) {
+    private SubCategory getOrCreateSubCategory(Category category, String subCategoryName, String key) {
+        Assert.notNull(subCategoryName);
+        for(SubCategory subCategory: subCategories){
+            if (subCategory.getName().toLowerCase().equals(subCategoryName.toLowerCase())
+                    &&
+                    (subCategory.getCategory().getName().toLowerCase().equals(category.getName().toLowerCase()))){
+                return subCategory;
+            }
+        }
+        SubCategory subCategory = new SubCategory(category, subCategoryName.toLowerCase(), key);
+        subCategories.add(subCategory);
+        return subCategory;
+    }
 
-        for(FinancialCategory financialCategory: financialCategories){
-            if (banklineDescription.toLowerCase().contains(financialCategory.getKey().toLowerCase())){
-                return financialCategory;
+    public List<SubCategory> getAllSubCategories() {
+        Collections.sort(subCategories, new Comparator<SubCategory>() {
+            @Override
+            public int compare(SubCategory subCategory1, SubCategory subCategory2) {
+
+                return subCategory1.compareTo(subCategory2);
+            }
+        });
+        return subCategories;
+    }
+
+    public List<Category> getAllCategories() {
+
+        Collections.sort(categories, new Comparator<Category>() {
+            @Override
+            public int compare(Category category1, Category category2) {
+
+                return category1.compareTo(category2);
+            }
+        });
+        return categories;
+
+    }
+
+    public SubCategory getSubCategory(String banklineDescription) {
+
+        for(SubCategory subCategory: subCategories){
+            if (banklineDescription.toLowerCase().contains(subCategory.getKey().toLowerCase())){
+                return subCategory;
             }
         }
         return null;
 
+    }
+
+    public void addUnmatchedGenericBankLine(GenericBankLine genericBankLine) {
+        unMatchedGenericBankLines.add(genericBankLine);
+    }
+
+    public List<GenericBankLine> getUnMatchedGenericBankLines() {
+        return unMatchedGenericBankLines;
     }
 }

@@ -8,6 +8,11 @@ public class Amount {
     private String amountAsString = null;
     private int amountInCents = 0;
 
+    public Amount(){
+        amountAsString = "0";
+        amountInCents = 0;
+    }
+
     public Amount(String amountAsString) {
         this.amountAsString = amountAsString;
         if (amountAsString == null || amountAsString.trim().isEmpty()){

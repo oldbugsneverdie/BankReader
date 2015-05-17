@@ -2,6 +2,7 @@ package BankReader.file.ABN;
 
 import BankReader.category.FinancialCategories;
 import BankReader.category.FinancialCategory;
+import BankReader.category.SubCategory;
 import BankReader.file.BankProcessor;
 import BankReader.file.GenericBankLine;
 import BankReader.util.Amount;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -37,15 +39,17 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
         genericBankLine.setDescription(abnBankLine.getOmschrijving());
         genericBankLine.setDate(abnBankLine.getTransactiedatum());
 
-        FinancialCategory financialCategory = financialCategories.getFinancialCategory(genericBankLine.getDescription());
+        SubCategory subCategory = financialCategories.getSubCategory(genericBankLine.getDescription());
 
-        if (financialCategory==null){
-            genericBankLine.setCategory("Unknown");
-            genericBankLine.setSubCategory("Unknown");
+        if (subCategory==null){
+            genericBankLine.setCategory(null);
+            genericBankLine.setSubCategory(null);
+            financialCategories.addUnmatchedGenericBankLine(genericBankLine);
             LOG.warn("Could not find category for amount {}, {}", genericBankLine.getAmount(), genericBankLine.getDescription());
         } else {
-            genericBankLine.setCategory(financialCategory.getCategoryName());
-            genericBankLine.setSubCategory(financialCategory.getSubCategoryName());
+            genericBankLine.setCategory(subCategory.getCategory());
+            genericBankLine.setSubCategory(subCategory);
+            subCategory.addGenericBankLine(genericBankLine);
         }
 
         return genericBankLine;

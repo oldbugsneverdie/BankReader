@@ -2,6 +2,7 @@ package BankReader.file.ING;
 
 import BankReader.category.FinancialCategories;
 import BankReader.category.FinancialCategory;
+import BankReader.category.SubCategory;
 import BankReader.file.GenericBankLine;
 import BankReader.file.BankProcessor;
 import BankReader.util.Amount;
@@ -40,15 +41,17 @@ public class INGProcessor extends BankProcessor implements ItemProcessor<INGBank
         genericBankLine.setAmount(new Amount(amountAsString));
         genericBankLine.setDescription(ingBankLine.getOmschrijving() + " - " + ingBankLine.getMededelingen() );
 
-        FinancialCategory financialCategory = financialCategories.getFinancialCategory(genericBankLine.getDescription());
+        SubCategory subCategory = financialCategories.getSubCategory(genericBankLine.getDescription());
 
-        if (financialCategory==null){
-            genericBankLine.setCategory("Unknown");
-            genericBankLine.setSubCategory("Unknown");
+        if (subCategory==null){
+            genericBankLine.setCategory(null);
+            genericBankLine.setSubCategory(null);
+            financialCategories.addUnmatchedGenericBankLine(genericBankLine);
             LOG.warn("Could not find category for amount {}, {}", genericBankLine.getAmount(), genericBankLine.getDescription());
         } else {
-            genericBankLine.setCategory(financialCategory.getCategoryName());
-            genericBankLine.setSubCategory(financialCategory.getSubCategoryName());
+            genericBankLine.setCategory(subCategory.getCategory());
+            genericBankLine.setSubCategory(subCategory);
+            subCategory.addGenericBankLine(genericBankLine);
         }
 
         return genericBankLine;

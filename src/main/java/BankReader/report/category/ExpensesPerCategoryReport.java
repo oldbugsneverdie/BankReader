@@ -1,13 +1,18 @@
 package BankReader.report.category;
 
+import BankReader.category.Category;
+import BankReader.category.FinancialCategories;
 import BankReader.category.FinancialCategory;
+import BankReader.category.SubCategory;
 import BankReader.file.GenericBankLine;
+import BankReader.util.Amount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.file.FlatFileFooterCallback;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -26,9 +31,11 @@ import java.util.List;
 @Configuration
 public class ExpensesPerCategoryReport extends FlatFileItemWriter<GenericBankLine> implements FlatFileFooterCallback {
 
+    public static final String NEW_LINE = "%n";
     private static Logger LOG = LoggerFactory.getLogger(ExpensesPerCategoryReport.class);
 
-    private List<FinancialCategory> financialCategories = new ArrayList<FinancialCategory>();
+    @Autowired
+    private FinancialCategories financialCategories;
 
     @Value("${output.directory}")
     private String outputDirectory;
@@ -49,48 +56,31 @@ public class ExpensesPerCategoryReport extends FlatFileItemWriter<GenericBankLin
 
     @Override
     public void write(List<? extends GenericBankLine> list) throws Exception {
-        for (GenericBankLine genericBankLine : list) {
-            addAmount(genericBankLine);
-        }
+        //No processing per GenericBankLine needed as we just want to know the amounts per category and sub category
     }
 
     @Override
     public void writeFooter(Writer writer) throws IOException {
         String separator = ";";
-        for (FinancialCategory financialCategory : financialCategories){
-            String message = String.format(financialCategory.getCategoryName() + separator + financialCategory.getSubCategoryName() + separator + financialCategory.getAmount() + "%n");
+
+        writer.write("Amounts per category"+ NEW_LINE);
+        writer.write(""+ NEW_LINE);
+        for (Category category : financialCategories.getAllCategories()){
+            String message = String.format(category.getName() + separator + category.getAmount() + NEW_LINE);
             writer.write(message);
         }
 
-    }
+        writer.write(""+ NEW_LINE);
+        writer.write(""+ NEW_LINE);
 
-    public void addAmount(GenericBankLine genericBankLine){
-
-        FinancialCategory financialCategory = getFinancialCategory(genericBankLine.getCategory(), genericBankLine.getSubCategory());
-        financialCategory.addAmount(genericBankLine.getAmount());
-
-    }
-
-    private FinancialCategory getFinancialCategory(String category, String subCategory) {
-//        LOG.debug("Looking for category {} / {}", category, subCategory);
-        for (FinancialCategory financialCategory: financialCategories){
-            if (financialCategory.categoriesMatch(category, subCategory)){
-//                LOG.debug("Found financial category {} ", financialCategory);
-                return financialCategory;
-            } else {
-//                LOG.debug("Category {} / {} does not match {}", category, subCategory, financialCategory);
-            }
+        writer.write("Amounts per subcategory"+ NEW_LINE);
+        writer.write(""+ NEW_LINE);
+        for (SubCategory subCategory : financialCategories.getAllSubCategories()){
+            String message = String.format(subCategory.getCategory().getName() + separator + subCategory.getName() + separator + subCategory.getAmount() + "%n");
+            writer.write(message);
         }
-        LOG.debug("No financial category found, create new one for {} / {}", category, subCategory);
-        FinancialCategory financialCategory = new FinancialCategory("", category, subCategory);
-        financialCategories.add(financialCategory);
-        return financialCategory;
-
-    }
 
 
-    public List<FinancialCategory> getFinancialCategories() {
-        return financialCategories;
     }
 
 }

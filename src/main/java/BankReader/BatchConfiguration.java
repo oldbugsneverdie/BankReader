@@ -63,7 +63,7 @@ public class BatchConfiguration {
         return jobs.get("bankProcessingJob")
                 .start(abnStep())
                 .next(ingStep())
-                .next(resultFilesStep())
+                //.next(resultFilesStep())
                 .next(expensesPerCategoryStep())
                 .build();
     }
@@ -167,6 +167,7 @@ public class BatchConfiguration {
 
 
     // Join result files
+    // TODO can be removed?
     @Bean
     public ItemReader<GenericBankLine> genericReader() {
 
