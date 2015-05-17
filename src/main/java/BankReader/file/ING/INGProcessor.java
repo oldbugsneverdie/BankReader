@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -40,6 +41,15 @@ public class INGProcessor extends BankProcessor implements ItemProcessor<INGBank
         }
         genericBankLine.setAmount(new Amount(amountAsString));
         genericBankLine.setDescription(ingBankLine.getOmschrijving() + " - " + ingBankLine.getMededelingen() );
+
+
+        String dateAsString = ingBankLine.getDatum();
+        String year = dateAsString.substring(0, 4);
+        String month = dateAsString.substring(4, 6);
+        String day = dateAsString.substring(6,8);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Integer.valueOf(year), Integer.valueOf(month), Integer.valueOf(day));
+        genericBankLine.setDate(calendar.getTime());
 
         SubCategory subCategory = financialCategories.getSubCategory(genericBankLine.getDescription());
 

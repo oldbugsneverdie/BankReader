@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.time.Month;
 
 /**
  * Created by jadu on 11-5-2015.
@@ -66,6 +67,8 @@ public class ExpensesPerCategoryReport implements Tasklet {
 
         Workbook workbook = new HSSFWorkbook();
 
+        // Per category
+
         Sheet sheet = workbook.createSheet("Per category");
 
         int rownum = 0;
@@ -81,6 +84,7 @@ public class ExpensesPerCategoryReport implements Tasklet {
             }
         }
 
+        //Per subcategory
 
         Sheet subcategorySheet = workbook.createSheet("Per sub category");
         rownum = 0;
@@ -96,6 +100,27 @@ public class ExpensesPerCategoryReport implements Tasklet {
             }
         }
 
+
+        // Per category per month
+
+        Sheet categoryPerMonthSheet = workbook.createSheet("Per category per month");
+        rownum = 0;
+
+        createCategoryPerMonthHeaderRow(rownum++, categoryPerMonthSheet);
+
+        for (Category category : financialCategories.getAllCategories()){
+
+            int percentage = 0;
+            if (category.getAmount().getAmountInCents() < 0 ){
+                percentage = (category.getAmount().getAmountInCents()*100) / totalAmountMinusCategories.getAmountInCents();
+                createCategoryPerMonthRow(rownum++, category, percentage, categoryPerMonthSheet);
+            } else{
+                percentage = (category.getAmount().getAmountInCents()*100) / totalAmountPlusCategories.getAmountInCents();
+                createCategoryPerMonthRow(rownum++, category, percentage, categoryPerMonthSheet);
+            }
+        }
+
+        // Write the excel file
         try (FileOutputStream out = new FileOutputStream(new File(outputDirectory + "/expenses-per-category.xls"));) {
             workbook.write(out);
         }
@@ -140,5 +165,71 @@ public class ExpensesPerCategoryReport implements Tasklet {
         categoryPercentageCell.setCellValue(percentage);
 
     }
+
+    private void createCategoryPerMonthRow(int rowNumber, Category category, int percentage, Sheet sheet) {
+
+        Row row = sheet.createRow(rowNumber++);
+        int c = 1;
+
+        Cell categoryNameCell = row.createCell(c++);
+        categoryNameCell.setCellValue(category.getName());
+
+        Cell categoryPercentageCell = row.createCell(c++);
+        categoryPercentageCell.setCellValue(percentage);
+
+        createMonthCell(row, c++, category, Month.JANUARY);
+        createMonthCell(row, c++, category, Month.FEBRUARY);
+        createMonthCell(row, c++, category, Month.MARCH);
+        createMonthCell(row, c++, category, Month.APRIL);
+        createMonthCell(row, c++, category, Month.MAY);
+        createMonthCell(row, c++, category, Month.JUNE);
+        createMonthCell(row, c++, category, Month.JULY);
+        createMonthCell(row, c++, category, Month.AUGUST);
+        createMonthCell(row, c++, category, Month.SEPTEMBER);
+        createMonthCell(row, c++, category, Month.OCTOBER);
+        createMonthCell(row, c++, category, Month.NOVEMBER);
+        createMonthCell(row, c++, category, Month.DECEMBER);
+    }
+
+    private void createMonthCell(Row row, int columnNumber, Category category, Month month) {
+        Cell cell = row.createCell(columnNumber);
+        Amount amount = category.getAmountByMonth(month);
+        cell.setCellValue(new Double(amount.toString()));
+    }
+
+    private void createCategoryPerMonthHeaderRow(int rowNumber, Sheet sheet) {
+
+        // Header row
+        Row row = sheet.createRow(rowNumber++);
+        int c = 1;
+
+        Cell categoryNameHeaderCell = row.createCell(c++);
+        categoryNameHeaderCell.setCellValue("Category");
+
+        Cell categoryPercentageHeaderCell = row.createCell(c++);
+        categoryPercentageHeaderCell.setCellValue("Percentage");
+
+        createMonthHeaderCell(row, c++, "Jan");
+        createMonthHeaderCell(row, c++, "Feb");
+        createMonthHeaderCell(row, c++, "Mar");
+        createMonthHeaderCell(row, c++, "Apr");
+        createMonthHeaderCell(row, c++, "May");
+        createMonthHeaderCell(row, c++, "Jum");
+        createMonthHeaderCell(row, c++, "Jul");
+        createMonthHeaderCell(row, c++, "Aug");
+        createMonthHeaderCell(row, c++, "Sep");
+        createMonthHeaderCell(row, c++, "Oct");
+        createMonthHeaderCell(row, c++, "Nov");
+        createMonthHeaderCell(row, c++, "Dec");
+
+    }
+
+    private void createMonthHeaderCell(Row row, int columnNumber, String nameOfMonth) {
+        Cell cell = row.createCell(columnNumber);
+        cell.setCellValue(nameOfMonth);
+    }
+
+
+
 
 }

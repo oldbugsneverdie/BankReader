@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 
+import java.util.Date;
+
 /**
  * Created by jan on 2-5-15.
  */
@@ -17,15 +19,15 @@ public class GenericBankLine {
 
     private Category category;
     private SubCategory subCategory;
-    private String date;
+    private Date date;
     private Amount amount;
     private String description;
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

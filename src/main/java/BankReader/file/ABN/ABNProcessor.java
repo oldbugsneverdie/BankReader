@@ -18,6 +18,8 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,7 +39,14 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
 
         genericBankLine.setAmount(new Amount(abnBankLine.getTransactiebedrag()));
         genericBankLine.setDescription(abnBankLine.getOmschrijving());
-        genericBankLine.setDate(abnBankLine.getTransactiedatum());
+
+        String dateAsString = abnBankLine.getTransactiedatum();
+        String year = dateAsString.substring(0, 4);
+        String month = dateAsString.substring(4, 6);
+        String day = dateAsString.substring(6,8);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Integer.valueOf(year), Integer.valueOf(month), Integer.valueOf(day));
+        genericBankLine.setDate(calendar.getTime());
 
         SubCategory subCategory = financialCategories.getSubCategory(genericBankLine.getDescription());
 
