@@ -41,7 +41,9 @@ public class FinancialCategories {
     public void init() throws IOException {
         Path path = FileSystems.getDefault().getPath(settingsDirectory, CATEGORIES_FILE_NAME);
         List<String> categoryLines = Files.readAllLines(path, Charset.defaultCharset());
+        int lineNumber = 0;
         for (String line : categoryLines){
+            lineNumber++;
             LOG.info("reading category {}", line);
 
             if (line.trim().isEmpty()){
@@ -67,6 +69,8 @@ public class FinancialCategories {
             String subCat = "";
             if (categoryAndSubCategory.length>1){
                 subCat = categoryAndSubCategory[1];
+            } else {
+                throw new RuntimeException("Missing sub category for category: " + cat + " on line " + lineNumber);
             }
 
             addFinancialCategory(key, cat, subCat);

@@ -54,8 +54,7 @@ public class SubCategory implements Comparable{
     public void addGenericBankLine(GenericBankLine genericBankLine){
         genericBankLines.add(genericBankLine);
         this.amount.addAmount(genericBankLine.getAmount());
-        this.category.addAmount(genericBankLine.getAmount());
-
+        this.category.addGenericBankLine(genericBankLine);
     }
 
     @Override

@@ -13,6 +13,8 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -63,7 +65,6 @@ public class BatchConfiguration {
         return jobs.get("bankProcessingJob")
                 .start(abnStep())
                 .next(ingStep())
-                //.next(resultFilesStep())
                 .next(expensesPerCategoryStep())
                 .build();
     }
@@ -166,111 +167,19 @@ public class BatchConfiguration {
     }
 
 
-    // Join result files
-    // TODO can be removed?
-    @Bean
-    public ItemReader<GenericBankLine> genericReader() {
-
-        FlatFileItemReader<GenericBankLine> reader = new FlatFileItemReader<GenericBankLine>();
-        reader.setLineMapper(new DefaultLineMapper<GenericBankLine>() {{
-            setLineTokenizer(new DelimitedLineTokenizer("###") {{
-                setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
-            }});
-            setFieldSetMapper(new BeanWrapperFieldSetMapper<GenericBankLine>() {{
-                setTargetType(GenericBankLine.class);
-            }});
-        }});
-
-        MultiResourceItemReader multiResourceItemReader = new MultiResourceItemReader();
-        Resource[] resources;
-        try {
-            String pattern = "file:" + inputDirectory + "/temp/*output.csv";
-            resources = resourcePatternResolver.getResources(pattern);
-        } catch (IOException e) {
-            throw new RuntimeException("I/O problems when resolving the input file pattern.",e);
-        }
-        multiResourceItemReader.setResources(resources);
-        multiResourceItemReader.setDelegate(reader);
-
-        return multiResourceItemReader;
-    }
+    // Report tasklets
 
     @Bean
-    public ItemProcessor<GenericBankLine, GenericBankLine> genericProcessor() {
-        return new GenericProcessor();
-    }
-
-    @Bean
-    public ItemWriter<GenericBankLine> genericWriter() {
-        FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-        writer.setResource(new FileSystemResource(inputDirectory + "/temp/total.csv"));
-        DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
-        delLineAgg.setDelimiter("###");
-        BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
-        fieldExtractor.setNames(new String[] {"category", "subCategory", "date", "amount", "description"});
-        delLineAgg.setFieldExtractor(fieldExtractor);
-        writer.setLineAggregator(delLineAgg);
-        return writer;
-    }
-
-    @Bean
-    public Step resultFilesStep() {
-        return steps.get("joinResultFilesStep")
-                .<GenericBankLine, GenericBankLine> chunk(5)
-                .reader(genericReader())
-                .processor(genericProcessor())
-                .writer(genericWriter())
-                .build();
-    }
-
-    // Process total.csv to get useful reports
-
-    @Bean
-    public ItemReader<GenericBankLine> totalReader() {
-
-        FlatFileItemReader<GenericBankLine> reader = new FlatFileItemReader<GenericBankLine>();
-        reader.setResource(new FileSystemResource(inputDirectory + "/temp/total.csv"));
-        reader.setLineMapper(new DefaultLineMapper<GenericBankLine>() {{
-            setLineTokenizer(new DelimitedLineTokenizer("###") {{
-                setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
-            }});
-            setFieldSetMapper(new BeanWrapperFieldSetMapper<GenericBankLine>() {{
-                setTargetType(GenericBankLine.class);
-            }});
-        }});
-        return reader;
-    }
-
-    @Bean
-    public ItemProcessor<GenericBankLine, GenericBankLine> totalProcessor() {
-        return new TotalProcessor();
-    }
-
-    @Bean
-    public ExpensesPerCategoryReport expensesPerCategoryWriter() {
-//        FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-//        writer.setResource(new FileSystemResource(settingsDirectory + "/expenses-per-category.csv"));
-//        DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
-//        delLineAgg.setDelimiter("###");
-//        BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
-//        fieldExtractor.setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
-//        delLineAgg.setFieldExtractor(fieldExtractor);
-//        writer.setLineAggregator(delLineAgg);
-
+    public Tasklet expensesPerCategoryWriter() {
         ExpensesPerCategoryReport expensesPerCategoryReport = new ExpensesPerCategoryReport();
-        expensesPerCategoryReport.setFooterCallback(expensesPerCategoryReport);
-
         return expensesPerCategoryReport;
 
     }
 
     @Bean
-    public Step expensesPerCategoryStep() {
+    public TaskletStep expensesPerCategoryStep() {
         return steps.get("expensesPerCategory")
-                .<GenericBankLine, GenericBankLine> chunk(5)
-                .reader(totalReader())
-                .processor(totalProcessor())
-                .writer(expensesPerCategoryWriter())
+                .tasklet(expensesPerCategoryWriter())
                 .build();
     }
 
