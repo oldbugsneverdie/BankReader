@@ -38,6 +38,7 @@ import java.io.IOException;
 @EnableBatchProcessing
 public class BatchConfiguration {
 
+
     @Autowired
     private JobBuilderFactory jobs;
 
@@ -50,6 +51,11 @@ public class BatchConfiguration {
     @Value("${input.directory}")
     protected String inputDirectory;
 
+    @Value("${output.directory}")
+    protected String outputDirectory;
+
+    @Value("${settings.directory}")
+    protected String settingsDirectory;
 
     // Job definition
     @Bean
@@ -85,7 +91,7 @@ public class BatchConfiguration {
     @Bean
     public ItemWriter<GenericBankLine> abnWriter() {
     	FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-        writer.setResource(new FileSystemResource(inputDirectory + "/abn-output.csv"));
+        writer.setResource(new FileSystemResource(inputDirectory + "/temp/abn-output.csv"));
     	DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
     	delLineAgg.setDelimiter("###");
     	BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
@@ -134,7 +140,7 @@ public class BatchConfiguration {
     @Bean
     public ItemWriter<GenericBankLine> ingWriter() {
         FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-        writer.setResource(new FileSystemResource(inputDirectory + "/ing-output.csv"));
+        writer.setResource(new FileSystemResource(inputDirectory + "/temp/ing-output.csv"));
         DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
         delLineAgg.setDelimiter("###");
         BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
@@ -177,7 +183,7 @@ public class BatchConfiguration {
         MultiResourceItemReader multiResourceItemReader = new MultiResourceItemReader();
         Resource[] resources;
         try {
-            String pattern = "file:" + inputDirectory + "/*output.csv";
+            String pattern = "file:" + inputDirectory + "/temp/*output.csv";
             resources = resourcePatternResolver.getResources(pattern);
         } catch (IOException e) {
             throw new RuntimeException("I/O problems when resolving the input file pattern.",e);
@@ -196,7 +202,7 @@ public class BatchConfiguration {
     @Bean
     public ItemWriter<GenericBankLine> genericWriter() {
         FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-        writer.setResource(new FileSystemResource(inputDirectory + "/total.csv"));
+        writer.setResource(new FileSystemResource(inputDirectory + "/temp/total.csv"));
         DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
         delLineAgg.setDelimiter("###");
         BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
@@ -222,7 +228,7 @@ public class BatchConfiguration {
     public ItemReader<GenericBankLine> totalReader() {
 
         FlatFileItemReader<GenericBankLine> reader = new FlatFileItemReader<GenericBankLine>();
-        reader.setResource(new FileSystemResource(inputDirectory + "/total.csv"));
+        reader.setResource(new FileSystemResource(inputDirectory + "/temp/total.csv"));
         reader.setLineMapper(new DefaultLineMapper<GenericBankLine>() {{
             setLineTokenizer(new DelimitedLineTokenizer("###") {{
                 setNames(new String[]{"category", "subCategory", "date", "amount", "description"});
@@ -242,7 +248,7 @@ public class BatchConfiguration {
     @Bean
     public ExpensesPerCategoryReport expensesPerCategoryWriter() {
 //        FlatFileItemWriter<GenericBankLine> writer = new FlatFileItemWriter<GenericBankLine>();
-//        writer.setResource(new FileSystemResource(inputDirectory + "/expenses-per-category.csv"));
+//        writer.setResource(new FileSystemResource(settingsDirectory + "/expenses-per-category.csv"));
 //        DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
 //        delLineAgg.setDelimiter("###");
 //        BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();

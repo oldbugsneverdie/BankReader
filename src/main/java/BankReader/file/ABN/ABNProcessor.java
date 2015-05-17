@@ -8,6 +8,7 @@ import BankReader.util.Amount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -23,6 +24,9 @@ import java.util.List;
 public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBankLine, GenericBankLine> {
 
     public static final Logger LOG = LoggerFactory.getLogger(ABNProcessor.class);
+
+    @Autowired
+    FinancialCategories financialCategories;
 
     @Override
     public GenericBankLine process(final ABNBankLine abnBankLine) throws Exception {

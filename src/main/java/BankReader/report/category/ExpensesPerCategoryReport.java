@@ -4,17 +4,11 @@ import BankReader.category.FinancialCategory;
 import BankReader.file.GenericBankLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemStream;
-import org.springframework.batch.item.ItemStreamException;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileFooterCallback;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
@@ -36,15 +30,15 @@ public class ExpensesPerCategoryReport extends FlatFileItemWriter<GenericBankLin
 
     private List<FinancialCategory> financialCategories = new ArrayList<FinancialCategory>();
 
-    @Value("${input.directory}")
-    private String inputDirectory;
+    @Value("${output.directory}")
+    private String outputDirectory;
 
     public ExpensesPerCategoryReport() {
     }
 
     @PostConstruct
     public void init(){
-        setResource(new FileSystemResource(inputDirectory + "/expenses-per-category.csv"));
+        setResource(new FileSystemResource(outputDirectory + "/expenses-per-category.csv"));
         DelimitedLineAggregator<GenericBankLine> delLineAgg = new DelimitedLineAggregator<GenericBankLine>();
         delLineAgg.setDelimiter("###");
         BeanWrapperFieldExtractor<GenericBankLine> fieldExtractor = new BeanWrapperFieldExtractor<GenericBankLine>();
@@ -58,7 +52,6 @@ public class ExpensesPerCategoryReport extends FlatFileItemWriter<GenericBankLin
         for (GenericBankLine genericBankLine : list) {
             addAmount(genericBankLine);
         }
-        //super.write(list);
     }
 
     @Override
@@ -79,13 +72,13 @@ public class ExpensesPerCategoryReport extends FlatFileItemWriter<GenericBankLin
     }
 
     private FinancialCategory getFinancialCategory(String category, String subCategory) {
-        LOG.debug("Looking for category {} / {}", category, subCategory);
+//        LOG.debug("Looking for category {} / {}", category, subCategory);
         for (FinancialCategory financialCategory: financialCategories){
             if (financialCategory.categoriesMatch(category, subCategory)){
-                LOG.debug("Found financial category {} ", financialCategory);
+//                LOG.debug("Found financial category {} ", financialCategory);
                 return financialCategory;
             } else {
-                LOG.debug("Category {} / {} does not match {}", category, subCategory, financialCategory);
+//                LOG.debug("Category {} / {} does not match {}", category, subCategory, financialCategory);
             }
         }
         LOG.debug("No financial category found, create new one for {} / {}", category, subCategory);
