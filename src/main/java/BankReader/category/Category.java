@@ -69,4 +69,9 @@ public class Category implements Comparable {
         }
         return amount;
     }
+
+    @Override
+    public String toString() {
+        return "Category " + this.getName();
+    }
 }

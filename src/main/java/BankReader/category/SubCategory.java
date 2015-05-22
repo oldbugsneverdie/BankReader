@@ -63,7 +63,12 @@ public class SubCategory implements Comparable{
         if (this.getCategory().equals(othersSubCategory.getCategory())){
             return this.getName().compareTo(othersSubCategory.getName());
         } else {
-            return this.getCategory().compareTo(othersSubCategory.getCategory());
+            return+ this.getCategory().compareTo(othersSubCategory.getCategory());
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Subcategory " + this.getCategory().getName() + ", " + this.getName() + " for key " + this.getKey();
     }
 }

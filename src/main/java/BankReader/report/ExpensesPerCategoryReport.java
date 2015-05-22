@@ -1,4 +1,4 @@
-package BankReader.report.category;
+package BankReader.report;
 
 import BankReader.category.Category;
 import BankReader.category.FinancialCategories;

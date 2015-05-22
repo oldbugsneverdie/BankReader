@@ -1,11 +1,10 @@
-package BankReader.report.category;
+package BankReader.report;
 
 import BankReader.file.BankProcessor;
 import BankReader.file.GenericBankLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created by jadu on 10-5-2015.

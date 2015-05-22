@@ -44,7 +44,7 @@ public class FinancialCategories {
         int lineNumber = 0;
         for (String line : categoryLines){
             lineNumber++;
-            LOG.info("reading category {}", line);
+            LOG.info("reading line {},  {}", lineNumber, line);
 
             if (line.trim().isEmpty()){
                 //skip empty lines
@@ -78,7 +78,7 @@ public class FinancialCategories {
         }
     }
 
-    private void addFinancialCategory(String key, String categoryName, String subCategoryName){
+    public void addFinancialCategory(String key, String categoryName, String subCategoryName){
 
         if (keyIsUnique(key)){
             addNewSubCategory(key, categoryName, subCategoryName);
@@ -96,11 +96,11 @@ public class FinancialCategories {
         return true;
     }
 
-    private void addNewSubCategory(String key, String categoryName, String subCategoryName) {
+    private SubCategory addNewSubCategory(String key, String categoryName, String subCategoryName) {
 
         Category category = getOrCreateCategory(categoryName);
 
-        SubCategory subCategory = getOrCreateSubCategory(category, subCategoryName, key);
+        return createSubCategory(category, subCategoryName, key);
 
     }
 
@@ -113,20 +113,14 @@ public class FinancialCategories {
         }
         Category category = new Category(categoryName.toLowerCase());
         categories.add(category);
+        LOG.info("Create new {}", category);
         return category;
     }
 
-    private SubCategory getOrCreateSubCategory(Category category, String subCategoryName, String key) {
-        Assert.notNull(subCategoryName);
-        for(SubCategory subCategory: subCategories){
-            if (subCategory.getName().toLowerCase().equals(subCategoryName.toLowerCase())
-                    &&
-                    (subCategory.getCategory().getName().toLowerCase().equals(category.getName().toLowerCase()))){
-                return subCategory;
-            }
-        }
+    private SubCategory createSubCategory(Category category, String subCategoryName, String key) {
         SubCategory subCategory = new SubCategory(category, subCategoryName.toLowerCase(), key);
         subCategories.add(subCategory);
+        LOG.info("Create new {}", subCategory);
         return subCategory;
     }
 
@@ -157,12 +151,24 @@ public class FinancialCategories {
     public SubCategory getSubCategory(String banklineDescription) {
 
         for(SubCategory subCategory: subCategories){
-            if (banklineDescription.toLowerCase().contains(subCategory.getKey().toLowerCase())){
+            String bankLineToCompare= createLineToCompare(banklineDescription);
+            String subCatToCompare = createLineToCompare(subCategory.getKey());
+            if (bankLineToCompare.contains(subCatToCompare)){
                 return subCategory;
             }
         }
         return null;
 
+    }
+
+    /**
+     * Compare lines by removing spaces and compare lowercase
+     * Removing spaces from the description fixes the problem of seemingly random spaces being added by the banks to their descriptions.
+     */
+    private String createLineToCompare(String line) {
+        String result = line.toLowerCase();
+        result = result.replaceAll(" ", "");
+        return result;
     }
 
     public void addUnmatchedGenericBankLine(GenericBankLine genericBankLine) {

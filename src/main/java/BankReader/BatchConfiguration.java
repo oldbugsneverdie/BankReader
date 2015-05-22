@@ -3,11 +3,10 @@ package BankReader;
 import BankReader.file.ABN.ABNBankLine;
 import BankReader.file.ABN.ABNProcessor;
 import BankReader.file.GenericBankLine;
-import BankReader.file.GenericProcessor;
 import BankReader.file.ING.INGBankLine;
 import BankReader.file.ING.INGProcessor;
-import BankReader.report.category.ExpensesPerCategoryReport;
-import BankReader.report.category.TotalProcessor;
+import BankReader.report.ExpensesPerCategoryReport;
+import BankReader.report.UnmatchedBankLinesReport;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -20,7 +19,6 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileItemWriter;
-import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
@@ -31,10 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
-
-import java.io.IOException;
 
 @Configuration
 @EnableBatchProcessing
@@ -65,6 +60,7 @@ public class BatchConfiguration {
         return jobs.get("bankProcessingJob")
                 .start(abnStep())
                 .next(ingStep())
+                .next(unmatchedBankLinesStep())
                 .next(expensesPerCategoryStep())
                 .build();
     }
@@ -167,7 +163,24 @@ public class BatchConfiguration {
     }
 
 
-    // Report tasklets
+    // Unmatched bank lines report
+
+    @Bean
+    public Tasklet unmatchedBankLinesWriter() {
+        UnmatchedBankLinesReport unmatchedBankLinesReport = new UnmatchedBankLinesReport();
+        return unmatchedBankLinesReport;
+
+    }
+
+    @Bean
+    public TaskletStep unmatchedBankLinesStep() {
+        return steps.get("unmatched bank lines")
+                .tasklet(unmatchedBankLinesWriter())
+                .build();
+    }
+
+
+    // Expenses per category report
 
     @Bean
     public Tasklet expensesPerCategoryWriter() {
