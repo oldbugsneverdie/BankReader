@@ -1,0 +1,3 @@
+"Datum","Naam / Omschrijving","Rekening","Tegenrekening","Code","Af Bij","Bedrag (EUR)","MutatieSoort","Mededelingen"
+"20150103","Supermarket B","NL77INGB987654321","","BA","Af","50,00","Betaalautomaat","Pasvolgnr:123 03-01-2015 19:12 Transactie:123456 Term:654321"
+"20150104","Water bill","NL77INGB987654321","NL77INGB222222222","GT","Af","150,00","Internetbankieren","IBAN: NL77INGB887766554 BIC: 78343678 Naam: Water bill 2015"

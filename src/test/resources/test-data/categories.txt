@@ -1,0 +1,10 @@
+# Household
+Supermarket A=household,groceries
+Supermarket B=household,groceries
+water=household,water
+
+# Income
+salary=income,salary
+
+# Cash withdrawal
+cash machine=internal,cash

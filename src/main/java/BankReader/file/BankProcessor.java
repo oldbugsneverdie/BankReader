@@ -58,6 +58,8 @@ public class BankProcessor{
             } else {
                 // If a bank line is not an internal transfer, but an actual expense, we link it to the sub category.
                 subCategory.addGenericBankLine(genericBankLine);
+                // And as an external transfer to the account
+                account.addExternalTransfer(genericBankLine);
             }
         }
         return genericBankLine;

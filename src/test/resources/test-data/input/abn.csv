@@ -1,0 +1,4 @@
+Rekeningnummer,Muntsoort,Transactiedatum,Rentedatum,Beginsaldo,Eindsaldo,Transactiebedrag,Omschrijving
+123456789,EUR,20150101,20150101,"0,00","2000,00","2000,00","salary"
+123456789,EUR,20150102,20150102,"2000,00","1900,00","-100,00","supermarket A"
+123456789,EUR,20150204,20150204,"1900,00","1850,00","-50,00","Cash machine 123"

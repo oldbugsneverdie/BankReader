@@ -19,6 +19,7 @@ public class Account {
     private String comment;
     private boolean isVirtualAccount = false;
     private List<GenericBankLine> internalTransfers = new ArrayList<GenericBankLine>();
+    private List<GenericBankLine> externalTransfers = new ArrayList<GenericBankLine>();
 
     public Account(String accountName, String accountFileName, String accountType) {
         this.accountName = accountName;
@@ -69,6 +70,14 @@ public class Account {
 
     public List<GenericBankLine> getInternalTransfers() {
         return internalTransfers;
+    }
+
+    public void addExternalTransfer(GenericBankLine genericBankLine) {
+        externalTransfers.add(genericBankLine);
+    }
+
+    public List<GenericBankLine> getExternalTransfers() {
+        return externalTransfers;
     }
 
     @Override

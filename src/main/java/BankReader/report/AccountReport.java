@@ -1,10 +1,6 @@
 package BankReader.report;
 
 import BankReader.account.Account;
-import BankReader.account.AccountLoader;
-import BankReader.category.Category;
-import BankReader.category.FinancialCategoryLoader;
-import BankReader.category.SubCategory;
 import BankReader.file.GenericBankLine;
 import BankReader.util.Amount;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -18,15 +14,12 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.Month;
 
 /**
  * Report on the bank lines and amounts per Account
@@ -45,7 +38,7 @@ public class AccountReport extends BaseReport implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 
-        Workbook workbook = new HSSFWorkbook();
+        Workbook workbook = createWorkbook();
 
         // Totals per account
 
@@ -53,27 +46,47 @@ public class AccountReport extends BaseReport implements Tasklet {
 
         int rownum = 0;
         for (Account account: accountLoader.getAccounts()) {
-            Amount totalAmount = new Amount();
+
+            Amount totalInternalTransferAmount = new Amount();
+            Amount totalExternalTransferAmount = new Amount();
+
             for (GenericBankLine genericBankLine : account.getInternalTransfers()){
-                totalAmount.addAmount(genericBankLine.getAmount());
+                totalInternalTransferAmount.addAmount(genericBankLine.getAmount());
             }
-            createAccountRow(rownum++, account, totalAmount, sheet);
+
+            for (GenericBankLine genericBankLine : account.getExternalTransfers()){
+                totalExternalTransferAmount.addAmount(genericBankLine.getAmount());
+            }
+
+            createAccountRow(rownum++, account, totalInternalTransferAmount, totalExternalTransferAmount, sheet);
+
         }
 
-        // Internal transfers per account
+        // All transfers per account
 
-        sheet = workbook.createSheet("Internal transfers");
+        sheet = workbook.createSheet("Account transfers");
 
         rownum = 0;
         for (Account account: accountLoader.getAccounts()) {
-            Amount totalAmount = new Amount();
+            Amount totalInternalTransferAmount = new Amount();
             for (GenericBankLine genericBankLine : account.getInternalTransfers()){
-                totalAmount.addAmount(genericBankLine.getAmount());
+                totalInternalTransferAmount.addAmount(genericBankLine.getAmount());
             }
-            createAccountRow(rownum++, account, totalAmount, sheet);
+            createAccountRow(rownum++, account, totalInternalTransferAmount, null, sheet);
             for (GenericBankLine genericBankLine : account.getInternalTransfers()){
-                createInternalTransferRow(rownum++, account, genericBankLine, sheet);
+                createAccountTransferRow(rownum++, account, genericBankLine, sheet);
             }
+
+            Amount totalExternalTransferAmount = new Amount();
+            for (GenericBankLine genericBankLine : account.getExternalTransfers()){
+                totalExternalTransferAmount.addAmount(genericBankLine.getAmount());
+            }
+            createAccountRow(rownum++, account, null, totalExternalTransferAmount, sheet);
+            for (GenericBankLine genericBankLine : account.getExternalTransfers()){
+                createAccountTransferRow(rownum++, account, genericBankLine, sheet);
+            }
+
+
         }
 
         // Write the excel file
@@ -89,20 +102,27 @@ public class AccountReport extends BaseReport implements Tasklet {
 
     }
 
-    private void createAccountRow(int rowNumber, Account account, Amount totalAmount, Sheet sheet) {
+    private void createAccountRow(int rowNumber, Account account, Amount totalInternalTransferAmount, Amount totalExternalTransferAmount, Sheet sheet) {
 
         Row row = sheet.createRow(rowNumber);
         int cellNumber = 0;
 
-        Cell accountNameCell = row.createCell(cellNumber++);
+        Cell accountNameCell = row.createCell(cellNumber);
         accountNameCell.setCellValue(account.getAccountName());
 
-        Cell totalAmountCell = row.createCell(cellNumber++);
-        totalAmountCell.setCellValue(totalAmount.toString());
+        cellNumber++;
+        if (totalInternalTransferAmount != null){
+            createEuroCell(row, cellNumber, totalInternalTransferAmount);
+        }
+
+        cellNumber++;
+        if (totalExternalTransferAmount != null){
+            createEuroCell(row, cellNumber, totalExternalTransferAmount);
+        }
 
     }
 
-    private void createInternalTransferRow(int rowNumber, Account account, GenericBankLine genericBankLine, Sheet sheet) {
+    private void createAccountTransferRow(int rowNumber, Account account, GenericBankLine genericBankLine, Sheet sheet) {
         Row row = sheet.createRow(rowNumber);
         int cellNumber = 0;
 
