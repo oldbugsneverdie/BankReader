@@ -22,6 +22,11 @@ public class BankProcessor{
     @Autowired
     private AccountLoader accountLoader;
 
+    protected Account account;
+
+    public BankProcessor(Account account) {
+        this.account = account;
+    }
 
     public GenericBankLine process(GenericBankLine genericBankLine) {
         SubCategory subCategory = financialCategoryLoader.getSubCategory(genericBankLine.getDescription());
@@ -35,15 +40,23 @@ public class BankProcessor{
             genericBankLine.setCategory(subCategory.getCategory());
             genericBankLine.setSubCategory(subCategory);
             if (subCategory.getCategory().isInternalTransfer()){
-                Account account = accountLoader.getAccount(subCategory.getName());
-                if (account.isVirtualAccount()){
+                // Add the bank line as an internal transfer to the account
+                account.addInternalTransfer(genericBankLine);
+                // Get the target account for this internal transfer
+                Account targetAccount = accountLoader.getAccount(subCategory.getName());
+                if (targetAccount.isVirtualAccount()){
+                    // If the target account is a virtual account (like 'cash') we also create a new generic bank line with the reversed amount for it.
                     Amount reversedAmount = genericBankLine.getAmount().reversedAmount();
                     GenericBankLine reversedGenericBankLine = new GenericBankLine(genericBankLine);
                     reversedGenericBankLine.setAmount(reversedAmount);
-                    account.addInternalTransfer(reversedGenericBankLine);
+                    targetAccount.addInternalTransfer(reversedGenericBankLine);
+                } else {
+                    // Do nothing.
+                    // If the target account is not a virtual account we do nothing as the transfer will appear automatically when
+                    // processing the bank lines of that target account.
                 }
-                account.addInternalTransfer(genericBankLine);
             } else {
+                // If a bank line is not an internal transfer, but an actual expense, we link it to the sub category.
                 subCategory.addGenericBankLine(genericBankLine);
             }
         }

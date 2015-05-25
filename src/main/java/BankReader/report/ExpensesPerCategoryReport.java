@@ -29,21 +29,9 @@ import java.time.Month;
  */
 @Component
 @Configuration
-public class ExpensesPerCategoryReport implements Tasklet {
+public class ExpensesPerCategoryReport extends BaseReport implements Tasklet {
 
-    public static final String NEW_LINE = "%n";
-    private static final String EMPTY_CELL = "-";
     private static Logger LOG = LoggerFactory.getLogger(ExpensesPerCategoryReport.class);
-
-    @Autowired
-    private FinancialCategoryLoader financialCategoryLoader;
-
-    @Autowired
-    private AccountLoader accountLoader;
-
-    @Value("${output.directory}")
-    private String outputDirectory;
-    public static final String SEPARATOR = ";";
 
     public ExpensesPerCategoryReport() {
     }
@@ -140,17 +128,18 @@ public class ExpensesPerCategoryReport implements Tasklet {
     private void createSubCategoryRow(int rowNumber, SubCategory subCategory, int percentage, Sheet sheet) {
 
         Row row = sheet.createRow(rowNumber);
+        int colNumber = 0;
 
-        Cell categoryNameCell = row.createCell(1);
+        Cell categoryNameCell = row.createCell(colNumber++);
         categoryNameCell.setCellValue(subCategory.getCategory().getName());
 
-        Cell subCategoryNameCell = row.createCell(2);
+        Cell subCategoryNameCell = row.createCell(colNumber++);
         subCategoryNameCell.setCellValue(subCategory.getName());
 
-        Cell subCategoryAmountCell = row.createCell(3);
+        Cell subCategoryAmountCell = row.createCell(colNumber++);
         subCategoryAmountCell.setCellValue(subCategory.getAmount().toString());
 
-        Cell subCategoryPercentageCell = row.createCell(4);
+        Cell subCategoryPercentageCell = row.createCell(colNumber++);
         subCategoryPercentageCell.setCellValue(percentage);
 
     }
@@ -158,14 +147,15 @@ public class ExpensesPerCategoryReport implements Tasklet {
     private void createCategoryRow(int rowNumber, Category category, int percentage, Sheet sheet) {
 
         Row row = sheet.createRow(rowNumber);
+        int colNumber = 0;
 
-        Cell categoryNameCell = row.createCell(1);
+        Cell categoryNameCell = row.createCell(colNumber++);
         categoryNameCell.setCellValue(category.getName());
 
-        Cell categoryAmountCell = row.createCell(2);
+        Cell categoryAmountCell = row.createCell(colNumber++);
         categoryAmountCell.setCellValue(category.getAmount().toString());
 
-        Cell categoryPercentageCell = row.createCell(3);
+        Cell categoryPercentageCell = row.createCell(colNumber++);
         categoryPercentageCell.setCellValue(percentage);
 
     }
@@ -173,26 +163,26 @@ public class ExpensesPerCategoryReport implements Tasklet {
     private void createCategoryPerMonthRow(int rowNumber, Category category, int percentage, Sheet sheet) {
 
         Row row = sheet.createRow(rowNumber++);
-        int c = 1;
+        int colNumber = 0;
 
-        Cell categoryNameCell = row.createCell(c++);
+        Cell categoryNameCell = row.createCell(colNumber++);
         categoryNameCell.setCellValue(category.getName());
 
-        Cell categoryPercentageCell = row.createCell(c++);
+        Cell categoryPercentageCell = row.createCell(colNumber++);
         categoryPercentageCell.setCellValue(percentage);
 
-        createMonthCell(row, c++, category, Month.JANUARY);
-        createMonthCell(row, c++, category, Month.FEBRUARY);
-        createMonthCell(row, c++, category, Month.MARCH);
-        createMonthCell(row, c++, category, Month.APRIL);
-        createMonthCell(row, c++, category, Month.MAY);
-        createMonthCell(row, c++, category, Month.JUNE);
-        createMonthCell(row, c++, category, Month.JULY);
-        createMonthCell(row, c++, category, Month.AUGUST);
-        createMonthCell(row, c++, category, Month.SEPTEMBER);
-        createMonthCell(row, c++, category, Month.OCTOBER);
-        createMonthCell(row, c++, category, Month.NOVEMBER);
-        createMonthCell(row, c++, category, Month.DECEMBER);
+        createMonthCell(row, colNumber++, category, Month.JANUARY);
+        createMonthCell(row, colNumber++, category, Month.FEBRUARY);
+        createMonthCell(row, colNumber++, category, Month.MARCH);
+        createMonthCell(row, colNumber++, category, Month.APRIL);
+        createMonthCell(row, colNumber++, category, Month.MAY);
+        createMonthCell(row, colNumber++, category, Month.JUNE);
+        createMonthCell(row, colNumber++, category, Month.JULY);
+        createMonthCell(row, colNumber++, category, Month.AUGUST);
+        createMonthCell(row, colNumber++, category, Month.SEPTEMBER);
+        createMonthCell(row, colNumber++, category, Month.OCTOBER);
+        createMonthCell(row, colNumber++, category, Month.NOVEMBER);
+        createMonthCell(row, colNumber++, category, Month.DECEMBER);
     }
 
     private void createMonthCell(Row row, int columnNumber, Category category, Month month) {
@@ -205,26 +195,26 @@ public class ExpensesPerCategoryReport implements Tasklet {
 
         // Header row
         Row row = sheet.createRow(rowNumber++);
-        int c = 1;
+        int colNumber = 0;
 
-        Cell categoryNameHeaderCell = row.createCell(c++);
+        Cell categoryNameHeaderCell = row.createCell(colNumber++);
         categoryNameHeaderCell.setCellValue("Category");
 
-        Cell categoryPercentageHeaderCell = row.createCell(c++);
+        Cell categoryPercentageHeaderCell = row.createCell(colNumber++);
         categoryPercentageHeaderCell.setCellValue("Percentage");
 
-        createMonthHeaderCell(row, c++, "Jan");
-        createMonthHeaderCell(row, c++, "Feb");
-        createMonthHeaderCell(row, c++, "Mar");
-        createMonthHeaderCell(row, c++, "Apr");
-        createMonthHeaderCell(row, c++, "May");
-        createMonthHeaderCell(row, c++, "Jum");
-        createMonthHeaderCell(row, c++, "Jul");
-        createMonthHeaderCell(row, c++, "Aug");
-        createMonthHeaderCell(row, c++, "Sep");
-        createMonthHeaderCell(row, c++, "Oct");
-        createMonthHeaderCell(row, c++, "Nov");
-        createMonthHeaderCell(row, c++, "Dec");
+        createMonthHeaderCell(row, colNumber++, "Jan");
+        createMonthHeaderCell(row, colNumber++, "Feb");
+        createMonthHeaderCell(row, colNumber++, "Mar");
+        createMonthHeaderCell(row, colNumber++, "Apr");
+        createMonthHeaderCell(row, colNumber++, "May");
+        createMonthHeaderCell(row, colNumber++, "Jun");
+        createMonthHeaderCell(row, colNumber++, "Jul");
+        createMonthHeaderCell(row, colNumber++, "Aug");
+        createMonthHeaderCell(row, colNumber++, "Sep");
+        createMonthHeaderCell(row, colNumber++, "Oct");
+        createMonthHeaderCell(row, colNumber++, "Nov");
+        createMonthHeaderCell(row, colNumber++, "Dec");
 
     }
 

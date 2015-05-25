@@ -2,6 +2,7 @@ package BankReader.report;
 
 import BankReader.category.FinancialCategoryLoader;
 import BankReader.file.GenericBankLine;
+import BankReader.util.Amount;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -27,22 +28,12 @@ import java.io.IOException;
  */
 @Component
 @Configuration
-public class UnmatchedBankLinesReport implements Tasklet {
+public class UnmatchedBankLinesReport extends BaseReport implements Tasklet {
 
-    public static final String NEW_LINE = "%n";
-    private static final String EMPTY_CELL = "-";
     private static Logger LOG = LoggerFactory.getLogger(UnmatchedBankLinesReport.class);
-
-    @Autowired
-    private FinancialCategoryLoader financialCategories;
-
-    @Value("${output.directory}")
-    private String outputDirectory;
-    public static final String SEPARATOR = ";";
 
     public UnmatchedBankLinesReport() {
     }
-
 
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
@@ -50,18 +41,22 @@ public class UnmatchedBankLinesReport implements Tasklet {
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet("Unmatched bank lines");
 
-        LOG.info("Found {} unmatched banklines", financialCategories.getUnMatchedGenericBankLines().size());
+        LOG.info("Found {} unmatched banklines", financialCategoryLoader.getUnMatchedGenericBankLines().size());
         int rowNumber = 0;
-        for (GenericBankLine genericBankLine : financialCategories.getUnMatchedGenericBankLines()){
+        Amount totalAmount = new Amount();
+        for (GenericBankLine genericBankLine : financialCategoryLoader.getUnMatchedGenericBankLines()){
             LOG.debug("Found unmatched bankline {}", genericBankLine);
             rowNumber++;
+            totalAmount.addAmount(genericBankLine.getAmount());
             createGenericBankLineRow(rowNumber, genericBankLine, sheet);
         }
+        LOG.info("Total amount of unmatched banklines is {}", totalAmount);
+
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
 
         // Write the excel file
-        String fileName = outputDirectory + "/unmatched-bankliines.xls";
+        String fileName = outputDirectory + "/unmatched-banklines.xls";
         try (FileOutputStream out = new FileOutputStream(new File(fileName));) {
             LOG.info("Writing unmatched bank lines file to: {}" + fileName);
             workbook.write(out);

@@ -1,5 +1,6 @@
 package BankReader.file.ING;
 
+import BankReader.account.Account;
 import BankReader.category.FinancialCategoryLoader;
 import BankReader.category.SubCategory;
 import BankReader.file.GenericBankLine;
@@ -19,8 +20,9 @@ public class INGProcessor extends BankProcessor implements ItemProcessor<INGBank
 
     public static final Logger LOG = LoggerFactory.getLogger(INGProcessor.class);
 
-    @Autowired
-    FinancialCategoryLoader financialCategories;
+    public INGProcessor(Account account) {
+        super(account);
+    }
 
     @Override
     public GenericBankLine process(final INGBankLine ingBankLine) throws Exception {

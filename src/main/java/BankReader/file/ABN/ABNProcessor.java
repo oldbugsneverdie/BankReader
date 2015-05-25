@@ -11,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 
@@ -20,7 +23,11 @@ import java.util.Calendar;
 public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBankLine, GenericBankLine> {
 
     public static final Logger LOG = LoggerFactory.getLogger(ABNProcessor.class);
+    public static final String ABN_BANK_NAME = "abn";
 
+    public ABNProcessor(Account account) {
+        super(account);
+    }
 
     @Override
     public GenericBankLine process(final ABNBankLine abnBankLine) throws Exception {
@@ -43,5 +50,4 @@ public class ABNProcessor extends BankProcessor implements ItemProcessor<ABNBank
         return genericBankLine;
 
     }
-
 }

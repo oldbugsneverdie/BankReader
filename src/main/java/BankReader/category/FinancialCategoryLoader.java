@@ -59,6 +59,7 @@ public class FinancialCategoryLoader {
         for (String line : categoryLines){
             lineNumber++;
             LOG.info("reading line {},  {}", lineNumber, line);
+            currentComment = null;
 
             if (line.trim().isEmpty()){
                 //skip empty lines
@@ -108,8 +109,10 @@ public class FinancialCategoryLoader {
 
     private boolean keyIsUnique(String key) {
         for(SubCategory subCategory: subCategories){
-            if (subCategory.getKey().equals(key)){
-                return false;
+            for(SubCategoryKey subCategoryKey : subCategory.getKeys()) {
+                if (subCategoryKey.getKey().equalsIgnoreCase(key)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -119,14 +122,14 @@ public class FinancialCategoryLoader {
 
         Category category = getOrCreateCategory(categoryName);
 
-        return createSubCategory(category, subCategoryName, key, currentComment);
+        return getOrCreateSubCategory(category, subCategoryName, key, currentComment);
 
     }
 
     private Category getOrCreateCategory(String categoryName) {
         Assert.notNull(categoryName);
         for(Category category: categories){
-            if (category.getName().toLowerCase().equals(categoryName.toLowerCase())){
+            if (category.getName().equalsIgnoreCase(categoryName)){
                 return category;
             }
         }
@@ -136,9 +139,27 @@ public class FinancialCategoryLoader {
         return category;
     }
 
-    private SubCategory createSubCategory(Category category, String subCategoryName, String key, String currentComment) {
-        SubCategory subCategory = new SubCategory(category, subCategoryName.toLowerCase(), key);
+    private SubCategory getOrCreateSubCategory(Category category, String subCategoryName, String key, String currentComment) {
 
+        for (SubCategory subCategory : subCategories){
+            if ((subCategory.getCategory().equals(category)) && (subCategory.getName().equalsIgnoreCase(subCategoryName))){
+                // Found already existing matching sub category
+                // Add the key to this sub category
+                LOG.info("Adding '{}' to existing {}", key, subCategory);
+                SubCategoryKey subCategoryKey = new SubCategoryKey(key);
+                if (currentComment != null){
+                    subCategoryKey.setComment(currentComment);
+                }
+                subCategory.addKey(subCategoryKey);
+                return subCategory;
+            }
+        }
+
+        SubCategoryKey subCategoryKey = new SubCategoryKey(key);
+        SubCategory subCategory = new SubCategory(category, subCategoryName.toLowerCase(), subCategoryKey);
+        if (currentComment != null){
+            subCategory.setComment(currentComment);
+        }
         subCategories.add(subCategory);
         LOG.info("Create new {}", subCategory);
         return subCategory;
@@ -171,10 +192,12 @@ public class FinancialCategoryLoader {
     public SubCategory getSubCategory(String banklineDescription) {
 
         for(SubCategory subCategory: subCategories){
-            String bankLineToCompare= createLineToCompare(banklineDescription);
-            String subCatToCompare = createLineToCompare(subCategory.getKey());
-            if (bankLineToCompare.contains(subCatToCompare)){
-                return subCategory;
+            for (SubCategoryKey subCategoryKey : subCategory.getKeys()){
+                String bankLineToCompare= createLineToCompare(banklineDescription);
+                String subCatToCompare = createLineToCompare(subCategoryKey.getKey());
+                if (bankLineToCompare.contains(subCatToCompare)){
+                    return subCategory;
+                }
             }
         }
         return null;

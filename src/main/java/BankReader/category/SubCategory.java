@@ -15,17 +15,17 @@ public class SubCategory implements Comparable{
     private String name;
     private Amount amount = new Amount();
     private Category category;
-    private String key;
+    private List<SubCategoryKey> keys = new ArrayList<SubCategoryKey>();
     private List<GenericBankLine> genericBankLines = new ArrayList<GenericBankLine>();
     private String comment = null;
 
-    public SubCategory(Category category, String name, String key) {
+    public SubCategory(Category category, String name, SubCategoryKey subCategoryKey) {
         Assert.notNull(name, "Could not create sub category, name is null");
-        Assert.notNull(key, "Could not create sub category, key is null");
+        Assert.notNull(subCategoryKey, "Could not create sub category, key is null");
         Assert.notNull(category, "Could not create sub category for '"+name+"', category is null");
         this.name = name;
         this.category = category;
-        this.key = key;
+        this.keys.add(subCategoryKey);
     }
 
     public String getName() {
@@ -44,10 +44,6 @@ public class SubCategory implements Comparable{
         return category;
     }
 
-    public String getKey() {
-        return key;
-    }
-
     public List<GenericBankLine> getGenericBankLines() {
         return genericBankLines;
     }
@@ -56,6 +52,14 @@ public class SubCategory implements Comparable{
         genericBankLines.add(genericBankLine);
         this.amount.addAmount(genericBankLine.getAmount());
         this.category.addGenericBankLine(genericBankLine);
+    }
+
+    public void addKey(SubCategoryKey subCategoryKey) {
+        keys.add(subCategoryKey);
+    }
+
+    public List<SubCategoryKey> getKeys() {
+        return keys;
     }
 
     @Override
@@ -78,10 +82,11 @@ public class SubCategory implements Comparable{
 
     @Override
     public String toString() {
-        String result = "Subcategory " + this.getCategory().getName() + ", " + this.getName() + " for key " + this.getKey();
+        String result = "Subcategory " + this.getCategory().getName() + ", " + this.getName() + " for key " + this.getKeys();
         if (comment !=null){
             result += ". Comment: " + comment;
         }
         return result;
     }
+
 }

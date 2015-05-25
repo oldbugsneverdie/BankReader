@@ -114,4 +114,8 @@ public class AccountLoader {
         }
         throw new IllegalArgumentException("Account " + accountName + " does not exist");
     }
+
+    public List<Account> getAccounts() {
+        return accounts;
+    }
 }

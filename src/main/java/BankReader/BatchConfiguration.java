@@ -1,10 +1,13 @@
 package BankReader;
 
+import BankReader.account.Account;
+import BankReader.account.AccountLoader;
 import BankReader.file.ABN.ABNBankLine;
 import BankReader.file.ABN.ABNProcessor;
 import BankReader.file.GenericBankLine;
 import BankReader.file.ING.INGBankLine;
 import BankReader.file.ING.INGProcessor;
+import BankReader.report.AccountReport;
 import BankReader.report.ExpensesPerCategoryReport;
 import BankReader.report.UnmatchedBankLinesReport;
 import org.springframework.batch.core.Job;
@@ -19,6 +22,7 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
@@ -54,6 +58,9 @@ public class BatchConfiguration {
     @Value("${settings.directory}")
     protected String settingsDirectory;
 
+    @Autowired
+    AccountLoader accountLoader;
+
     // Job definition
     @Bean
     public Job getJob() {
@@ -62,8 +69,13 @@ public class BatchConfiguration {
                 .next(ingStep())
                 .next(unmatchedBankLinesStep())
                 .next(expensesPerCategoryStep())
+                .next(accountReportStep())
                 .build();
     }
+
+    //        use a multi resource item reader to readmultiple files and delegate it to the e.g. abnReader
+//        MultiResourceItemReader<ABNBankLine> multiResourceItemReader = new MultiResourceItemReader<ABNBankLine>();
+//        multiResourceItemReader.setDelegate(abnReader())
 
 
     // Bank ABN
@@ -100,7 +112,8 @@ public class BatchConfiguration {
     
     @Bean
     public ItemProcessor<ABNBankLine, GenericBankLine> abnProcessor() {
-        return new ABNProcessor();
+        Account account = accountLoader.getAccount("abn");
+        return new ABNProcessor(account);
     }
 
     @Bean
@@ -149,7 +162,8 @@ public class BatchConfiguration {
 
     @Bean
     public ItemProcessor<INGBankLine, GenericBankLine> ingProcessor() {
-        return new INGProcessor();
+        Account account = accountLoader.getAccount("ing");
+        return new INGProcessor(account);
     }
 
     @Bean
@@ -193,6 +207,22 @@ public class BatchConfiguration {
     public TaskletStep expensesPerCategoryStep() {
         return steps.get("expensesPerCategory")
                 .tasklet(expensesPerCategoryWriter())
+                .build();
+    }
+
+    // Expenses per category report
+
+    @Bean
+    public Tasklet accountReportWriter() {
+        AccountReport accountReport= new AccountReport();
+        return accountReport;
+
+    }
+
+    @Bean
+    public TaskletStep accountReportStep() {
+        return steps.get("accountReport")
+                .tasklet(accountReportWriter())
                 .build();
     }
 
