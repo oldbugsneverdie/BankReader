@@ -17,6 +17,7 @@ public class SubCategory implements Comparable{
     private Category category;
     private String key;
     private List<GenericBankLine> genericBankLines = new ArrayList<GenericBankLine>();
+    private String comment = null;
 
     public SubCategory(Category category, String name, String key) {
         Assert.notNull(name, "Could not create sub category, name is null");
@@ -67,8 +68,20 @@ public class SubCategory implements Comparable{
         }
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     @Override
     public String toString() {
-        return "Subcategory " + this.getCategory().getName() + ", " + this.getName() + " for key " + this.getKey();
+        String result = "Subcategory " + this.getCategory().getName() + ", " + this.getName() + " for key " + this.getKey();
+        if (comment !=null){
+            result += ". Comment: " + comment;
+        }
+        return result;
     }
 }

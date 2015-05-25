@@ -22,32 +22,51 @@ import java.util.List;
  * Created by jan on 3-5-15.
  */
 @Component
-public class FinancialCategories {
+public class FinancialCategoryLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FinancialCategories.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FinancialCategoryLoader.class);
     public static final String CATEGORIES_FILE_NAME = "categories.txt";
 
     @Value("${settings.directory}")
     protected String settingsDirectory;
 
+    @Value("${input.directory}")
+    protected String inputDirectory;
+
     private List<Category> categories = new ArrayList<Category>();
     private List<SubCategory> subCategories = new ArrayList<SubCategory>();
     private List<GenericBankLine> unMatchedGenericBankLines = new ArrayList<GenericBankLine>();
 
-    public FinancialCategories() {
+    public FinancialCategoryLoader() {
     }
 
     @PostConstruct
     public void init() throws IOException {
+
         Path path = FileSystems.getDefault().getPath(settingsDirectory, CATEGORIES_FILE_NAME);
+        readCategoryFile(path);
+
+        path = FileSystems.getDefault().getPath(inputDirectory, CATEGORIES_FILE_NAME);
+        readCategoryFile(path);
+
+    }
+
+    private void readCategoryFile(Path path) throws IOException {
+        LOG.info("Read categories from: {}", path);
         List<String> categoryLines = Files.readAllLines(path, Charset.defaultCharset());
         int lineNumber = 0;
+        String currentComment = "";
         for (String line : categoryLines){
             lineNumber++;
             LOG.info("reading line {},  {}", lineNumber, line);
 
             if (line.trim().isEmpty()){
                 //skip empty lines
+                continue;
+            }
+
+            if (line.startsWith("#")){
+                currentComment = line;
                 continue;
             }
 
@@ -73,15 +92,15 @@ public class FinancialCategories {
                 throw new RuntimeException("Missing sub category for category: " + cat + " on line " + lineNumber);
             }
 
-            addFinancialCategory(key, cat, subCat);
+            addFinancialCategory(key, cat, subCat, currentComment);
 
         }
     }
 
-    public void addFinancialCategory(String key, String categoryName, String subCategoryName){
+    public void addFinancialCategory(String key, String categoryName, String subCategoryName, String currentComment){
 
         if (keyIsUnique(key)){
-            addNewSubCategory(key, categoryName, subCategoryName);
+            addNewSubCategory(key, categoryName, subCategoryName, currentComment);
         } else {
             LOG.error("Will ignore category {} / {} with key '{}', as the key already exists", categoryName, subCategoryName, key);
         }
@@ -96,11 +115,11 @@ public class FinancialCategories {
         return true;
     }
 
-    private SubCategory addNewSubCategory(String key, String categoryName, String subCategoryName) {
+    private SubCategory addNewSubCategory(String key, String categoryName, String subCategoryName, String currentComment) {
 
         Category category = getOrCreateCategory(categoryName);
 
-        return createSubCategory(category, subCategoryName, key);
+        return createSubCategory(category, subCategoryName, key, currentComment);
 
     }
 
@@ -117,8 +136,9 @@ public class FinancialCategories {
         return category;
     }
 
-    private SubCategory createSubCategory(Category category, String subCategoryName, String key) {
+    private SubCategory createSubCategory(Category category, String subCategoryName, String key, String currentComment) {
         SubCategory subCategory = new SubCategory(category, subCategoryName.toLowerCase(), key);
+
         subCategories.add(subCategory);
         LOG.info("Create new {}", subCategory);
         return subCategory;

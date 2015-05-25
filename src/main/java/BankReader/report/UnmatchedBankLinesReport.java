@@ -1,6 +1,6 @@
 package BankReader.report;
 
-import BankReader.category.FinancialCategories;
+import BankReader.category.FinancialCategoryLoader;
 import BankReader.file.GenericBankLine;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -34,7 +34,7 @@ public class UnmatchedBankLinesReport implements Tasklet {
     private static Logger LOG = LoggerFactory.getLogger(UnmatchedBankLinesReport.class);
 
     @Autowired
-    private FinancialCategories financialCategories;
+    private FinancialCategoryLoader financialCategories;
 
     @Value("${output.directory}")
     private String outputDirectory;

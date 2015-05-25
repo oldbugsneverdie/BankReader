@@ -17,21 +17,6 @@ public class BankReaderApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-//        final BankFileReader bankFileReader = new BankFileReader();
-//        directory directoryReader = new directory(){
-//
-//            @Override
-//            protected void handleFile(File file) {
-//                bankFileReader.process(file);
-//
-//            }
-//
-//        };
-//        directoryReader.process(new File("."));
-
-
-
     }
 
 }

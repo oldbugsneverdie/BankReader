@@ -14,12 +14,16 @@ import java.util.List;
  */
 public class Category implements Comparable {
 
+    public static final String INTERNAL_TRANSFER = "internal";
+
     private String name;
     private Amount amount = new Amount();
     private List<GenericBankLine> genericBankLines = new ArrayList<GenericBankLine>();
+    private boolean internalTransfer = false;
 
     public Category(String name) {
         this.name = name;
+        internalTransfer = INTERNAL_TRANSFER.equalsIgnoreCase(name);
     }
 
     public String getName() {
@@ -32,6 +36,14 @@ public class Category implements Comparable {
 
     public Amount getAmount() {
         return amount;
+    }
+
+    public boolean isInternalTransfer() {
+        return internalTransfer;
+    }
+
+    public void setInternalTransfer(boolean internalTransfer) {
+        this.internalTransfer = internalTransfer;
     }
 
     @Override

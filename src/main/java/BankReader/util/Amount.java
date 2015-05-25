@@ -24,12 +24,22 @@ public class Amount {
         }
     }
 
+    public Amount(int amountInCents){
+        this.amountInCents = amountInCents;
+        this.amountAsString = String.valueOf(amountInCents);
+    }
+
     public int getAmountInCents() {
         return amountInCents;
     }
 
     public void addAmount(Amount amount) {
         this.amountInCents += amount.getAmountInCents();
+    }
+
+    public Amount reversedAmount(){
+        Amount reversedAmount = new Amount(this.amountInCents*-1);
+        return reversedAmount;
     }
 
     @Override

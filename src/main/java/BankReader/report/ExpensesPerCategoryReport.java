@@ -1,7 +1,8 @@
 package BankReader.report;
 
+import BankReader.account.AccountLoader;
 import BankReader.category.Category;
-import BankReader.category.FinancialCategories;
+import BankReader.category.FinancialCategoryLoader;
 import BankReader.category.SubCategory;
 import BankReader.util.Amount;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -35,7 +36,10 @@ public class ExpensesPerCategoryReport implements Tasklet {
     private static Logger LOG = LoggerFactory.getLogger(ExpensesPerCategoryReport.class);
 
     @Autowired
-    private FinancialCategories financialCategories;
+    private FinancialCategoryLoader financialCategoryLoader;
+
+    @Autowired
+    private AccountLoader accountLoader;
 
     @Value("${output.directory}")
     private String outputDirectory;
@@ -51,7 +55,7 @@ public class ExpensesPerCategoryReport implements Tasklet {
         Amount totalAmountCategories = new Amount();
         Amount totalAmountPlusCategories = new Amount();
         Amount totalAmountMinusCategories = new Amount();
-        for (Category category : financialCategories.getAllCategories()){
+        for (Category category : financialCategoryLoader.getAllCategories()){
             totalAmountCategories.addAmount(category.getAmount());
             if (category.getAmount().getAmountInCents() < 0 ){
                 LOG.info("Category " + category.getName() + " add " + category.getAmount() + " to minus");
@@ -72,7 +76,7 @@ public class ExpensesPerCategoryReport implements Tasklet {
         Sheet sheet = workbook.createSheet("Per category");
 
         int rownum = 0;
-        for (Category category : financialCategories.getAllCategories()){
+        for (Category category : financialCategoryLoader.getAllCategories()){
 
             int percentage = 0;
             if (category.getAmount().getAmountInCents() < 0 ){
@@ -89,7 +93,7 @@ public class ExpensesPerCategoryReport implements Tasklet {
         Sheet subcategorySheet = workbook.createSheet("Per sub category");
         rownum = 0;
 
-        for (SubCategory subCategory : financialCategories.getAllSubCategories()){
+        for (SubCategory subCategory : financialCategoryLoader.getAllSubCategories()){
             int percentage = 0;
             if (subCategory.getAmount().getAmountInCents() < 0 ){
                 percentage = (subCategory.getAmount().getAmountInCents()*100) / totalAmountMinusCategories.getAmountInCents();
@@ -108,7 +112,7 @@ public class ExpensesPerCategoryReport implements Tasklet {
 
         createCategoryPerMonthHeaderRow(rownum++, categoryPerMonthSheet);
 
-        for (Category category : financialCategories.getAllCategories()){
+        for (Category category : financialCategoryLoader.getAllCategories()){
 
             int percentage = 0;
             if (category.getAmount().getAmountInCents() < 0 ){

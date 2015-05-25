@@ -2,13 +2,8 @@
 package BankReader.file;
 
 import BankReader.category.Category;
-import BankReader.category.FinancialCategory;
 import BankReader.category.SubCategory;
-import BankReader.file.ABN.ABNBankLine;
 import BankReader.util.Amount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.batch.item.ItemProcessor;
 
 import java.util.Date;
 
@@ -22,6 +17,17 @@ public class GenericBankLine {
     private Date date;
     private Amount amount;
     private String description;
+
+    public GenericBankLine() {
+    }
+
+    public GenericBankLine(GenericBankLine genericBankLine) {
+        this.category = genericBankLine.getCategory();
+        this.subCategory = genericBankLine.getSubCategory();
+        this.date = genericBankLine.getDate();
+        this.amount = genericBankLine.getAmount();
+        this.description = genericBankLine.getDescription();
+    }
 
     public Date getDate() {
         return date;
@@ -61,5 +67,21 @@ public class GenericBankLine {
 
     public void setSubCategory(SubCategory subCategory) {
         this.subCategory = subCategory;
+    }
+
+    @Override
+    public String toString() {
+        String categoryName = (this.category == null) ? "?" : this.category.getName();
+        String subCategoryName = (this.subCategory == null) ? "?" : this.subCategory.getName();
+        String date = (this.date == null) ? "?" : this.date.toString();
+        String amount = (this.amount == null) ? "?" : this.amount.toString();
+        String description = (this.description == null) ? "?" : this.description;
+
+        return "Category " + categoryName
+                + ", subcategory " + subCategoryName
+                + ", date " + date
+                + ", amount " + amount
+                + ", description " + description;
+
     }
 }
