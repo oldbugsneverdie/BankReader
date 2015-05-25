@@ -4,7 +4,9 @@ import BankReader.file.GenericBankLine;
 import BankReader.util.Amount;
 import org.springframework.util.Assert;
 
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -87,6 +89,19 @@ public class SubCategory implements Comparable{
             result += ". Comment: " + comment;
         }
         return result;
+    }
+
+    public Amount getAmountByMonth(Month month) {
+        Amount amount = new Amount();
+        for (GenericBankLine genericBankLine: genericBankLines){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(genericBankLine.getDate());
+            int monthFromDate = calendar.get(Calendar.MONTH);
+            if (monthFromDate == month.getValue()){
+                amount.addAmount(genericBankLine.getAmount());
+            }
+        }
+        return amount;
     }
 
 }
